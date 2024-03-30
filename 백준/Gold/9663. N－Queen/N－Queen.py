@@ -1,35 +1,66 @@
-## method
-def sol(k): # k : 놓은 말 개수 - 점유 행 번호로도 활용 가능
-    # 퀸 : 상하좌우 - x, y 좌표 확인 / 대각선 - (y=x 선상 : used_up) r+c 같으면. (y=-x 선상 : used_down) r-c같으면 놓을 수 없음.
-    global n, cnt
-    
-    if k == n :
-        cnt += 1
-        return
+'''
+전체 케이스는 col == n//2 를 중심으로 좌우대칭임
 
-    # i : 점유 열 번호로 활용 가능
-    for i in range(n):
-        if not used_c[i] and not used_up[k+i] and not used_down[(n-1)+k-i]:
-            used_c[i] = True
-            used_up[k+i] = True
-            used_down[(n-1)+k-i] = True
-            sol(k+1)
-            used_c[i] = False
-            used_up[k+i] = False
-            used_down[(n-1)+k-i] = False
+ex)
+0 1 0 0
+0 0 0 1
+1 0 0 0
+0 0 1 0
 
-## input
+0 0 1 0
+1 0 0 0
+0 0 0 1
+0 1 0 0
+
+때문에, col(x)가 n//2 까지만 가능한 케이스를 구한후
+*2 해주면 전체 케이스에 대한 정답을 알 수 있음
+또한 홀수의 경우에는 n//2 + 1 를 따로 구헤줘야함
+홀수의 경우에는 상하 좌우대칭이 의미없으므로 *2 해주지 않음
+'''
+
+
 n = int(input())
-maps = [[0]*n for _ in range(n)]
-# 열 점유 여부
-used_c = [False]*n
-# y = x 선상 점유 여부
-used_up = [False]*(2*(n-1)+1)
-# y = -x 선상 점유 여부
-used_down = [False]*(2*(n-1)+1)
+check_row = [0 for i in range(n)]
+check_leftcross = [0 for i in range(n*2)]
+check_rightcross = [0 for i in range(n*2)]
+ret = 0
 
-cnt = 0
+def backtracking(cur):
+    if cur==n:
+        global ret
+        ret += 1
+        return 0
+    for i in range(n):
+        if check_row[i] or check_leftcross[n+cur-i] or check_rightcross[cur+i]:
+            continue
+        else:
+            check_row[i] = 1
+            check_leftcross[n+cur-i] = 1
+            check_rightcross[cur+i] = 1
+            backtracking(cur+1)
+            check_row[i] = 0
+            check_leftcross[n+cur-i] = 0
+            check_rightcross[cur+i] = 0
 
-## output
-sol(0)
-print(cnt)
+
+for i in range(n//2):
+    check_row[i] = 1
+    check_leftcross[n-i] = 1
+    check_rightcross[i] = 1
+    backtracking(1)
+    check_row[i] = 0
+    check_leftcross[n-i] = 0
+    check_rightcross[i] = 0
+ret = ret*2
+
+if n%2: #홀수일경우
+    i=n//2
+    check_row[i] = 1
+    check_leftcross[n-i] = 1
+    check_rightcross[i] = 1
+    backtracking(1)
+    check_row[i] = 0
+    check_leftcross[n-i] = 0
+    check_rightcross[i] = 0
+
+print(ret)
